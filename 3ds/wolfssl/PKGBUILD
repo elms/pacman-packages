@@ -1,0 +1,44 @@
+# Maintainer: WinterMute <davem@devkitpro.org>
+# Contributor: Elms <jeff@wolfssl.com>
+
+pkgname=3ds-wolfssl
+pkgver=4.7.0
+pkgrel=1
+pkgdesc='wolfSSL small, fast, portable implementation of TLS/SSL (for Nintendo 3DS)'
+arch=('any')
+url='https://wolfssl.com'
+license=('GPLv2')
+options=(!strip libtool staticlibs)
+makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
+
+wolfssldir=wolfssl-${pkgver}
+
+source=("https://wolfssl.com/wolfssl-${pkgver}.tar.gz")
+sha256sums=('8a230988082f09ebe8298ccd66017abc40bdd73787987f72215efc7b4564e44b')
+
+groups=('3ds-portlibs')
+
+build() {
+  cd $wolfssldir
+
+  source /opt/devkitpro/3dsvars.sh
+
+  ./configure CFLAGS="${CFLAGS} -DNO_WRITEV" \
+    CPPFLAGS="${CPPFLAGS}" \
+    LIBS="${LIBS}" \
+    LDFLAGS="${LDFLAGS} -specs=3dsx.specs" \
+    --prefix=${PORTLIBS_PREFIX} --host=arm-none-eabi \
+    --disable-shared --enable-sp-math-all --disable-examples --disable-crypttests
+
+  make
+}
+
+package() {
+  cd $wolfssldir
+
+  source /opt/devkitpro/3dsvars.sh
+
+  make DESTDIR="$pkgdir" install
+
+  install -Dm644 COPYING "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING
+}
